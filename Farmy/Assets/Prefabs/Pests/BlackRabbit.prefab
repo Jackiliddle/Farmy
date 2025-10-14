@@ -462,9 +462,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5168e82feeec433a96c2d892de9f60a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PestBehaviour
-  rabbitPrefabs: []
-  maxRabbits: 10
+  rabbitPrefabs:
+  - {fileID: 1908579470893912654}
+  - {fileID: 8865580132820027119, guid: 81099d226fc1d4fd0afefa243508afb3, type: 3}
+  - {fileID: 4464027970101978662, guid: 7024bece78aba412e8b42e0a863f57b6, type: 3}
+  rabbitsPerWave: 10
   spawnInterval: 3
+  delayBetweenWaves: 30
   spawnRangeX: 10
   spawnRangeZ: 10
 --- !u!114 &1901998831776603922
@@ -482,6 +486,12 @@ MonoBehaviour:
   speed: 4
   wanderRadius: 2
   wanderDelay: 2
+  minX: -10
+  maxX: 10
+  minZ: -10
+  maxZ: 10
+  lapsToEat: 5
+  spawner: {fileID: 0}
 --- !u!1 &2173438991701956782
 GameObject:
   m_ObjectHideFlags: 0

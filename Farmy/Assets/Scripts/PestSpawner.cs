@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class PestSpawner : MonoBehaviour
 {
     [Header("Rabbit Prefabs")]
-    public GameObject[] rabbitPrefabs;  // Assign your rabbit prefabs
+    public GameObject[] rabbitPrefabs;
 
     [Header("Spawn Settings")]
     public int rabbitsPerWave = 10;
@@ -17,10 +17,22 @@ public class PestSpawner : MonoBehaviour
     public float spawnRangeZ = 10f;
 
     private List<GameObject> activeRabbits = new List<GameObject>();
-    private bool spawning = false;
+    private bool gameStarted = false;
 
-    private void Start()
+    public void AdjustDifficulty(int difficulty)
     {
+        rabbitsPerWave = 10 * difficulty;
+        spawnInterval = Mathf.Max(0.5f, 3f / difficulty);
+        delayBetweenWaves = Mathf.Max(10f, 30f / difficulty);
+
+        Debug.Log($"Difficulty {difficulty}: {rabbitsPerWave} rabbits per wave, interval {spawnInterval}s");
+        StartSpawning();
+    }
+
+    private void StartSpawning()
+    {
+        if (gameStarted) return;
+        gameStarted = true;
         StartCoroutine(SpawnWaves());
     }
 
@@ -28,15 +40,11 @@ public class PestSpawner : MonoBehaviour
     {
         while (true)
         {
-            // Start a new wave
-            spawning = true;
             yield return StartCoroutine(SpawnWave());
-            spawning = false;
 
-            // Wait until all rabbits from this wave are destroyed
+            // wait until all rabbits destroyed before next wave
             yield return new WaitUntil(() => activeRabbits.Count == 0);
 
-            // Wait additional time before the next wave
             yield return new WaitForSeconds(delayBetweenWaves);
         }
     }
@@ -65,15 +73,16 @@ public class PestSpawner : MonoBehaviour
         GameObject rabbit = Instantiate(prefab, spawnPos, rot);
         activeRabbits.Add(rabbit);
 
-        // Remove from list when destroyed
-        RabbitDespawn despawn = rabbit.AddComponent<RabbitDespawn>();
-        despawn.onDestroyed += () => activeRabbits.Remove(rabbit);
+        RabbitMover mover = rabbit.GetComponent<RabbitMover>();
+        if (mover != null)
+            mover.spawner = this;
+
+        Debug.Log($"Spawned rabbit at {spawnPos}");
     }
 
-    // Small helper class to detect destruction of spawned rabbits
-    private class RabbitDespawn : MonoBehaviour
+    public void RabbitDestroyed(GameObject rabbit)
     {
-        public System.Action onDestroyed;
-        private void OnDestroy() => onDestroyed?.Invoke();
+        if (activeRabbits.Contains(rabbit))
+            activeRabbits.Remove(rabbit);
     }
 }
