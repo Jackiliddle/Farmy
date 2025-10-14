@@ -469,8 +469,8 @@ MonoBehaviour:
   rabbitsPerWave: 10
   spawnInterval: 3
   delayBetweenWaves: 30
-  spawnRangeX: 10
-  spawnRangeZ: 10
+  burrowSpawnFX: {fileID: 0}
+  burrowAudioFX: {fileID: 0}
 --- !u!114 &1901998831776603922
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -483,7 +483,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15c2117464b9844c5b0ca1471dcc3a22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RabbitMover
-  speed: 6
+  speed: 4
   wanderRadius: 2
   wanderDelay: 2
   scoreValue: 15
@@ -491,7 +491,8 @@ MonoBehaviour:
   maxX: 10
   minZ: -10
   maxZ: 10
-  lapsToEat: 2
+  lapsToEat: 3
+  monchAudioFX: {fileID: 8300000, guid: 37291efb4dc3b4d0199666c0b46c69c1, type: 3}
   spawner: {fileID: 0}
   gameManager: {fileID: 0}
 --- !u!1 &2173438991701956782

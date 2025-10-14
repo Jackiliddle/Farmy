@@ -7,6 +7,9 @@ TagManager:
   - Patch
   - Rabbit
   - Veggie
+  - FxTemporaire
+  - CinemachineTarget
+  - Burrow
   layers:
   - Default
   - TransparentFX

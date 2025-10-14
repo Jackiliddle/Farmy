@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI gameOverText;
     public TextMeshProUGUI titleText;
+    public TextMeshProUGUI cashText;
     public Button restartButton;
     public GameObject titleScreen;
 
@@ -23,12 +24,14 @@ public class GameManager : MonoBehaviour
     private int score;
     public bool isGameActive;
 
+    //Keep highscore here
     private void Start()
     {
         highScore = PlayerPrefs.GetInt("HighScore", 0);
         highScoreText.text = "High Score: " + highScore;
     }
 
+    //Update bunny killscore
     public void UpdateScore(int scoreToAdd)
     {
         score += scoreToAdd;
@@ -43,6 +46,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //Start game
     public void StartGame(int difficulty)
     {
         isGameActive = true;
@@ -57,9 +61,9 @@ public class GameManager : MonoBehaviour
     }
 
 
+    //Check there are veggies still on scene
     public void CheckGameOver()
     {
-        // Find all remaining veggies
         GameObject[] veggies = GameObject.FindGameObjectsWithTag("Veggie");
 
         if (veggies.Length == 0)
@@ -68,6 +72,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //Stop any routines if game is over
     public void GameOver()
     {
         if (!isGameActive) return;
@@ -83,6 +88,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Score:" + score);
     }
 
+    //Restart :)
     public void RestartGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);

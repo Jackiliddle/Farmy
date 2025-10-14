@@ -4,11 +4,9 @@ using System.Collections;
 public class CropGrower : MonoBehaviour
 {
     [Header("Growth Settings")]
-    public string cropTag = "Veggie";  // All crops share this tag
-    public float growDuration = 60f;   // Time to fully grow
+    public float growDuration = 15f;   // Time to fully grow
     public float finalScale = 3f;      // Target scale size
 
-    // Public static method to trigger growth
     public static void StartGrowingCrops()
     {
         GameObject[] crops = GameObject.FindGameObjectsWithTag("Veggie");
@@ -16,27 +14,30 @@ public class CropGrower : MonoBehaviour
         {
             if (crop != null)
             {
-                crop.transform.localScale = Vector3.zero;
-                crop.GetComponent<MonoBehaviour>().StartCoroutine(GrowCropCoroutine(crop.transform));
+                CropGrower grower = crop.GetComponent<CropGrower>();
+                if (grower != null)
+                {
+                    crop.transform.localScale = Vector3.zero;
+                    grower.StartCoroutine(grower.GrowCropCoroutine());
+                }
             }
         }
     }
 
-    private static IEnumerator GrowCropCoroutine(Transform crop)
+    public IEnumerator GrowCropCoroutine()
     {
         Vector3 startScale = Vector3.zero;
-        Vector3 targetScale = Vector3.one * 3f; // finalScale
+        Vector3 targetScale = Vector3.one * finalScale;
 
         float elapsed = 0f;
-        float duration = 15f; // growDuration
 
-        while (elapsed < duration)
+        while (elapsed < growDuration)
         {
             elapsed += Time.deltaTime;
-            crop.localScale = Vector3.Lerp(startScale, targetScale, elapsed / duration);
+            transform.localScale = Vector3.Lerp(startScale, targetScale, elapsed / growDuration);
             yield return null;
         }
 
-        crop.localScale = targetScale;
+        transform.localScale = targetScale;
     }
 }

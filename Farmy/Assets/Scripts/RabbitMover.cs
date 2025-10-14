@@ -19,6 +19,10 @@ public class RabbitMover : MonoBehaviour
     [Header("Eating Settings")]
     public int lapsToEat = 5;
 
+    [Header("Eating Auio")]
+    private AudioSource monchFXAudioSource;
+    public AudioClip monchAudioFX;
+
     [HideInInspector]
     public PestSpawner spawner;
 
@@ -33,6 +37,8 @@ public class RabbitMover : MonoBehaviour
 
     void Start()
     {
+        monchFXAudioSource = gameObject.AddComponent<AudioSource>();
+        monchFXAudioSource.volume = 0.3f; 
         PickRandomGarden();
         PickWanderTarget();
         wanderTimer = wanderDelay;
@@ -108,7 +114,8 @@ public class RabbitMover : MonoBehaviour
     {
     if (targetGarden != null)
     {
-        Destroy(targetGarden.gameObject);
+            Destroy(targetGarden.gameObject);
+            monchFXAudioSource.PlayOneShot(monchAudioFX, 1.0f);
 
         if (gameManager != null)
         {

@@ -7,19 +7,13 @@ public class PlayerController : MonoBehaviour
 
     [Header("Audio")]
     public AudioClip walkSound;
-    //public AudioClip shooSound;
-    //public AudioClip cashSound;
-
     private AudioSource walkAudioSource;   
-    //private AudioSource sfxAudioSource;    
 
     [Header("Player Animator")]
     public Animator playerAnim;
 
     [Header("Particle Effects")]
     public ParticleSystem dirtParticle;
-    //public ParticleSystem cashParticle;
-    //public ParticleSystem shooParticle;
 
     private Vector3 movementInput;
 
@@ -27,18 +21,17 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         playerAnim = GetComponent<Animator>();
+        playerAnim.applyRootMotion = false;
 
         walkAudioSource = gameObject.AddComponent<AudioSource>();
         walkAudioSource.loop = true;
         walkAudioSource.clip = walkSound;
-
     }
 
     void Update()
     {
-        // Movement input
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
         movementInput = new Vector3(horizontalInput, 0, verticalInput);
 
         HandleMovementAnimations();

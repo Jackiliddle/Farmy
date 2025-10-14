@@ -11,6 +11,7 @@ public class Destroy : MonoBehaviour
     [Header("Audio")]
     public AudioClip shooSound;
     public AudioClip cashSound;
+    public AudioClip popSound;
 
     private Collider currentTarget; // rabbit currently being touched
     public GameManager gameManager;
@@ -32,9 +33,6 @@ public class Destroy : MonoBehaviour
             if (shooSound != null)
                 sfxAudioSource.PlayOneShot(shooSound, 0.3f);
 
-            if (shooParticle != null)
-                shooParticle.Play();
-
             // Destroy rabbit ONLY if colliding
             if (currentTarget != null)
             {
@@ -42,6 +40,8 @@ public class Destroy : MonoBehaviour
                 if (rabbit != null && rabbit.gameManager != null)
                 {
                     gameManager.UpdateScore(rabbit.scoreValue);
+                    sfxAudioSource.PlayOneShot(popSound);
+                    shooParticle.Play();
                     Debug.Log("Rabbit Scored." + rabbit.scoreValue);
                 }   
 
