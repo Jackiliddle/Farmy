@@ -74,10 +74,14 @@ public class PestSpawner : MonoBehaviour
         activeRabbits.Add(rabbit);
 
         RabbitMover mover = rabbit.GetComponent<RabbitMover>();
+
         if (mover != null)
             mover.spawner = this;
 
+        mover.gameManager = FindObjectOfType<GameManager>(); // <-- make sure every rabbit has a reference
+
         Debug.Log($"Spawned rabbit at {spawnPos}");
+
     }
 
     public void RabbitDestroyed(GameObject rabbit)

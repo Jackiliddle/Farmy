@@ -483,15 +483,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15c2117464b9844c5b0ca1471dcc3a22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RabbitMover
-  speed: 4
+  speed: 6
   wanderRadius: 2
   wanderDelay: 2
+  scoreValue: 15
   minX: -10
   maxX: 10
   minZ: -10
   maxZ: 10
-  lapsToEat: 5
+  lapsToEat: 2
   spawner: {fileID: 0}
+  gameManager: {fileID: 0}
 --- !u!1 &2173438991701956782
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,6 +7,9 @@ public class RabbitMover : MonoBehaviour
     public float wanderRadius = 2f;
     public float wanderDelay = 2f;
 
+    [Header("Points")]
+    public int scoreValue = 5;
+
     [Header("Movement Boundaries")]
     public float minX = -10f;
     public float maxX = 10f;
@@ -26,6 +29,7 @@ public class RabbitMover : MonoBehaviour
     private int lapCount = 0;
     private float lastAngle = 0f;
     private float accumulatedRotation = 0f;
+    public GameManager gameManager;
 
     void Start()
     {
@@ -99,19 +103,28 @@ public class RabbitMover : MonoBehaviour
         Vector3 dir = transform.position - targetGarden.position;
         return Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
     }
-
+    
     private void EatVeggie()
     {
-        if (targetGarden != null)
-            Destroy(targetGarden.gameObject);
+    if (targetGarden != null)
+    {
+        Destroy(targetGarden.gameObject);
 
-        lapCount = 0;
-        accumulatedRotation = 0f;
-        PickRandomGarden();
+        if (gameManager != null)
+        {
+            gameManager.CheckGameOver();
+        }
+    }
+
+    lapCount = 0;
+    accumulatedRotation = 0f;
+    PickRandomGarden();
 
         if (targetGarden != null)
             PickWanderTarget();
-    }
+        }
+
+
 
     private void PickRandomGarden()
     {
@@ -130,6 +143,14 @@ public class RabbitMover : MonoBehaviour
     private void OnDestroy()
     {
         if (spawner != null)
+        {
             spawner.RabbitDestroyed(this.gameObject);
+        }
+
+        if (gameManager != null)
+        {
+            gameManager.CheckGameOver();
+        }
     }
+
 }

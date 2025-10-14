@@ -1018,8 +1018,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PestBehaviour
   rabbitPrefabs: []
-  maxRabbits: 10
+  rabbitsPerWave: 10
   spawnInterval: 3
+  delayBetweenWaves: 30
   spawnRangeX: 10
   spawnRangeZ: 10
 --- !u!114 &8155234749392520877
@@ -1037,6 +1038,14 @@ MonoBehaviour:
   speed: 2
   wanderRadius: 2
   wanderDelay: 2
+  scoreValue: 5
+  minX: -10
+  maxX: 10
+  minZ: -10
+  maxZ: 10
+  lapsToEat: 2
+  spawner: {fileID: 0}
+  gameManager: {fileID: 0}
 --- !u!1 &4527352557261392228
 GameObject:
   m_ObjectHideFlags: 0

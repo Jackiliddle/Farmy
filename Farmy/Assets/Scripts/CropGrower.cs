@@ -5,46 +5,38 @@ public class CropGrower : MonoBehaviour
 {
     [Header("Growth Settings")]
     public string cropTag = "Veggie";  // All crops share this tag
-    public float growDuration = 15f;   // Time to fully grow
+    public float growDuration = 60f;   // Time to fully grow
     public float finalScale = 3f;      // Target scale size
 
-    private void Start()
+    // Public static method to trigger growth
+    public static void StartGrowingCrops()
     {
-        StartCoroutine(GrowAllCrops());
-    }
-
-    private IEnumerator GrowAllCrops()
-    {
-        // Find all crops in the scene with the tag
-        GameObject[] crops = GameObject.FindGameObjectsWithTag(cropTag);
-
+        GameObject[] crops = GameObject.FindGameObjectsWithTag("Veggie");
         foreach (GameObject crop in crops)
         {
-            // Start each crop growing independently
-            StartCoroutine(GrowCrop(crop.transform));
+            if (crop != null)
+            {
+                crop.transform.localScale = Vector3.zero;
+                crop.GetComponent<MonoBehaviour>().StartCoroutine(GrowCropCoroutine(crop.transform));
+            }
         }
-
-        yield return null;
     }
 
-    private IEnumerator GrowCrop(Transform crop)
+    private static IEnumerator GrowCropCoroutine(Transform crop)
     {
         Vector3 startScale = Vector3.zero;
-        Vector3 targetScale = Vector3.one * finalScale;
+        Vector3 targetScale = Vector3.one * 3f; // finalScale
+
         float elapsed = 0f;
+        float duration = 15f; // growDuration
 
-        // Optional: reset initial scale to 0 (seed)
-        crop.localScale = startScale;
-
-        while (elapsed < growDuration)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / growDuration;
-            crop.localScale = Vector3.Lerp(startScale, targetScale, t);
+            crop.localScale = Vector3.Lerp(startScale, targetScale, elapsed / duration);
             yield return null;
         }
 
-        // Ensure final scale is exact
         crop.localScale = targetScale;
     }
 }

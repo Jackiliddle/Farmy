@@ -13,6 +13,7 @@ public class Destroy : MonoBehaviour
     public AudioClip cashSound;
 
     private Collider currentTarget; // rabbit currently being touched
+    public GameManager gameManager;
 
     void Start()
     {
@@ -37,6 +38,13 @@ public class Destroy : MonoBehaviour
             // Destroy rabbit ONLY if colliding
             if (currentTarget != null)
             {
+                RabbitMover rabbit = currentTarget.GetComponent<RabbitMover>();
+                if (rabbit != null && rabbit.gameManager != null)
+                {
+                    gameManager.UpdateScore(rabbit.scoreValue);
+                    Debug.Log("Rabbit Scored." + rabbit.scoreValue);
+                }   
+
                 Destroy(currentTarget.gameObject);
                 currentTarget = null;
             }
