@@ -58,7 +58,7 @@ public class RabbitMover : MonoBehaviour
                 EatVeggie();
         }
 
-        // HARD boundary destruction
+        // HARD boundary destruction. DO NOT TOUCH! THIS WORKS!!
         if (IsOutOfBounds())
         {
             Debug.Log($"{gameObject.name} left bounds at {transform.position} → Destroying!");
