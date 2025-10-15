@@ -45,6 +45,13 @@ public class PlayerController : MonoBehaviour
             Vector3 move = movementInput.normalized * speed * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + move);
         }
+
+        //Freeze drifting!!
+        else
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
     }
 
     private void HandleMovementAnimations()

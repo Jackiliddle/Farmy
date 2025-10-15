@@ -10,7 +10,7 @@ public class RabbitMover : MonoBehaviour
     [Header("Points")]
     public int scoreValue = 5;
 
-    [Header("Movement Boundaries")]
+    [Header("Movement Boundaries")] //NB: DON'T CHANGE!
     public float minX = -10f;
     public float maxX = 10f;
     public float minZ = -10f;
@@ -23,16 +23,28 @@ public class RabbitMover : MonoBehaviour
     private AudioSource monchFXAudioSource;
     public AudioClip monchAudioFX;
 
-    [HideInInspector]
-    public PestSpawner spawner;
+    // * * * * New * * * *
+    [Header("Player Awareness")]
+    public float fleeRadius = 0.5f;          // How close the player must be for rabbit to flee
+    public float fleeSpeedMultiplier = 1f; // How much faster rabbit runs when fleeing
+    public float panicDuration = 0.5f;     // How long rabbit stays in flee mode after player leaves
+    private Transform player;
+    private bool isFleeing = false;
+    private float panicTimer = 0f;
+    // * * * * New * * * *
 
+    [Header("Garden Seeking")]
     private Transform targetGarden;
     private Vector3 wanderTarget;
     private float wanderTimer;
 
+    [Header("Running Mechs")]
     private int lapCount = 0;
     private float lastAngle = 0f;
     private float accumulatedRotation = 0f;
+
+    [HideInInspector]
+    public PestSpawner spawner;
     public GameManager gameManager;
 
     void Start()
@@ -43,6 +55,10 @@ public class RabbitMover : MonoBehaviour
         PickWanderTarget();
         wanderTimer = wanderDelay;
 
+        // * * * * New * * * *
+        player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        // * * * * New * * * *
+
         if (targetGarden != null)
             lastAngle = GetAngleToTarget();
     }
@@ -51,6 +67,10 @@ public class RabbitMover : MonoBehaviour
     {
         if (targetGarden != null)
         {
+            // * * * * New * * * *
+            DetectPlayer();
+            // * * * * New * * * *
+
             MoveAndWander();
             TrackLaps();
 
@@ -58,7 +78,7 @@ public class RabbitMover : MonoBehaviour
                 EatVeggie();
         }
 
-        // HARD boundary destruction. DO NOT TOUCH! THIS WORKS!!
+        // HARD boundary destruction. NB: DO NOT TOUCH! THIS WORKS!
         if (IsOutOfBounds())
         {
             Debug.Log($"{gameObject.name} left bounds at {transform.position} → Destroying!");
@@ -72,9 +92,39 @@ public class RabbitMover : MonoBehaviour
         return pos.x < minX || pos.x > maxX || pos.z < minZ || pos.z > maxZ;
     }
 
+    //private void MoveAndWander()
+    //{
+    //    Vector3 direction = (wanderTarget - transform.position).normalized;
+    //    if (direction != Vector3.zero)
+    //        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 5f * Time.deltaTime);
+
+    //    transform.Translate(Vector3.forward * speed * Time.deltaTime);
+
+    //    wanderTimer -= Time.deltaTime;
+    //    if (Vector3.Distance(transform.position, wanderTarget) < 0.5f || wanderTimer <= 0f)
+    //    {
+    //        PickWanderTarget();
+    //        wanderTimer = wanderDelay;
+    //    }
+    //}
+
+    // * * * * New * * * * 
     private void MoveAndWander()
     {
-        Vector3 direction = (wanderTarget - transform.position).normalized;
+        Vector3 direction;
+
+        if (isFleeing && player != null)
+        {
+            // Move away from the player
+            direction = (transform.position - player.position).normalized;
+            float fleeSpeed = speed * fleeSpeedMultiplier;
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 8f * Time.deltaTime);
+            transform.Translate(Vector3.forward * fleeSpeed * Time.deltaTime);
+            return; // Skip wandering this frame
+        }
+
+        // Normal wandering
+        direction = (wanderTarget - transform.position).normalized;
         if (direction != Vector3.zero)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 5f * Time.deltaTime);
 
@@ -87,6 +137,7 @@ public class RabbitMover : MonoBehaviour
             wanderTimer = wanderDelay;
         }
     }
+    // * * * * New * * * * 
 
     private void TrackLaps()
     {
@@ -103,6 +154,31 @@ public class RabbitMover : MonoBehaviour
             accumulatedRotation = 0f;
         }
     }
+
+    // * * * * New * * * * 
+    private void DetectPlayer()
+    {
+        if (player == null) return;
+
+        float distance = Vector3.Distance(transform.position, player.position);
+
+        if (distance < fleeRadius)
+        {
+            // Start fleeing if not already
+            isFleeing = true;
+            panicTimer = panicDuration;
+        }
+        else if (isFleeing)
+        {
+            // Countdown panic timer once player leaves radius
+            panicTimer -= Time.deltaTime;
+            if (panicTimer <= 0f)
+            {
+                isFleeing = false;
+            }
+        }
+    }
+    // * * * * New * * * * 
 
     private float GetAngleToTarget()
     {

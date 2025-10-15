@@ -1045,6 +1045,9 @@ MonoBehaviour:
   maxZ: 10
   lapsToEat: 1
   monchAudioFX: {fileID: 8300000, guid: 37291efb4dc3b4d0199666c0b46c69c1, type: 3}
+  fleeRadius: 1
+  fleeSpeedMultiplier: 1
+  panicDuration: 2.5
   spawner: {fileID: 0}
   gameManager: {fileID: 0}
 --- !u!1 &4527352557261392228
