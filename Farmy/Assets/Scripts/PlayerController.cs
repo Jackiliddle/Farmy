@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     private AudioSource walkAudioSource;   
 
     [Header("Player Animator")]
-    public Animator playerAnim;
+    public Animator playerAnim; 
 
     [Header("Particle Effects")]
     public ParticleSystem dirtParticle;
@@ -20,9 +20,15 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        playerAnim = GetComponent<Animator>();
-        playerAnim.applyRootMotion = false;
 
+        // Get animator 
+        playerAnim = GetComponent<Animator>();
+        if (playerAnim != null)
+        
+            // don't let animation move player
+            playerAnim.applyRootMotion = false; 
+
+        // Setup audio source for walking
         walkAudioSource = gameObject.AddComponent<AudioSource>();
         walkAudioSource.loop = true;
         walkAudioSource.clip = walkSound;
@@ -30,47 +36,51 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Get player input
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
         movementInput = new Vector3(horizontalInput, 0, verticalInput);
 
+        // Play animations and sounds
         HandleMovementAnimations();
         HandleWalkSound();
     }
 
     void FixedUpdate()
     {
+        // Move player based on input
         if (movementInput.sqrMagnitude > 0.001f)
         {
             Vector3 move = movementInput.normalized * speed * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + move);
         }
-
-        //Freeze drifting!!
+        // Freeze player to prevent drifting when not moving
         else
         {
             rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
         }
     }
 
+    // Handle player running animations and dirt particle
     private void HandleMovementAnimations()
     {
         bool isMoving = movementInput.sqrMagnitude > 0.001f;
-        playerAnim.SetBool("isRunning", isMoving);
 
-        if (isMoving)
+        // Play running animation if animator exists
+        if (playerAnim != null)
+            playerAnim.SetBool("isRunning", isMoving);
+
+        // Play/stop dirt particles while moving
+        if (dirtParticle != null)
         {
-            if (dirtParticle != null && !dirtParticle.isPlaying)
+            if (isMoving && !dirtParticle.isPlaying)
                 dirtParticle.Play();
-        }
-        else
-        {
-            if (dirtParticle != null && dirtParticle.isPlaying)
+            else if (!isMoving && dirtParticle.isPlaying)
                 dirtParticle.Stop();
         }
     }
 
+    // Play or stop walking sound based on movement
     private void HandleWalkSound()
     {
         bool isMoving = movementInput.sqrMagnitude > 0.001f;

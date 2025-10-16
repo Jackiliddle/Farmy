@@ -1,5 +1,7 @@
 using UnityEngine;
 
+
+//This code is here because my stupid game stopped understanding when to do Game Over without it. idk why. 
 public class Veggie : MonoBehaviour
 {
     public GameManager gameManager;

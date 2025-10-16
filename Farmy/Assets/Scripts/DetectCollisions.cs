@@ -12,12 +12,14 @@ public class DetectCollisions : MonoBehaviour
     public AudioClip shooSound;
     public AudioClip cashSound;
     public AudioClip popSound;
-
-    private Collider currentTarget; // rabbit currently being touched
+    
+    // Rabbit currently being touched
+    private Collider currentTarget; 
     public GameManager gameManager;
 
     void Start()
     {
+        // Setup audio source for sound effects
         sfxAudioSource = gameObject.AddComponent<AudioSource>();
         sfxAudioSource.volume = 0.3f;
     }
@@ -29,7 +31,7 @@ public class DetectCollisions : MonoBehaviour
         {
             Debug.Log("SHOO!");
 
-            // Play sound and particles ALWAYS
+            // Play shoo sound ALWAYS
             if (shooSound != null)
                 sfxAudioSource.PlayOneShot(shooSound, 0.3f);
 
@@ -39,30 +41,35 @@ public class DetectCollisions : MonoBehaviour
                 RabbitMover rabbit = currentTarget.GetComponent<RabbitMover>();
                 if (rabbit != null && rabbit.gameManager != null)
                 {
+                    // Update score and play effects
                     gameManager.UpdateScore(rabbit.scoreValue);
                     sfxAudioSource.PlayOneShot(popSound);
                     shooParticle.Play();
-                    Debug.Log("Rabbit Scored." + rabbit.scoreValue);
-                }   
+                    Debug.Log("Rabbit Scored: " + rabbit.scoreValue);
+                }
 
                 Destroy(currentTarget.gameObject);
                 currentTarget = null;
             }
         }
 
-        // --- CASH action ---
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            Debug.Log("CASH!");
+        // // --- CASH action --- (Not used anymore)
+        // if (Input.GetKeyDown(KeyCode.C))
+        // {
+        //     Debug.Log("CASH!");
 
-            if (cashSound != null)
-                sfxAudioSource.PlayOneShot(cashSound, 1.0f);
+        //     // Play cash sound
+        //     if (cashSound != null)
+        //         sfxAudioSource.PlayOneShot(cashSound, 1.0f);
 
-            if (cashParticle != null)
-                cashParticle.Play();
-        }
+        //     // Show cash particle
+        //     if (cashParticle != null)
+        //         cashParticle.Play();
+        // }
+        
     }
 
+    // Track rabbit when entering trigger
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Rabbit"))
@@ -71,6 +78,7 @@ public class DetectCollisions : MonoBehaviour
         }
     }
 
+    // Clear target when exiting trigger
     private void OnTriggerExit(Collider other)
     {
         if (currentTarget == other)

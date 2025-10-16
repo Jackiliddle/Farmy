@@ -10,7 +10,7 @@ public class RabbitMover : MonoBehaviour
     [Header("Points")]
     public int scoreValue = 5;
 
-    [Header("Movement Boundaries")] //NB: DON'T CHANGE!
+    [Header("Movement Boundaries")] // NB: DON'T CHANGE!
     public float minX = -10f;
     public float maxX = 10f;
     public float minZ = -10f;
@@ -19,19 +19,22 @@ public class RabbitMover : MonoBehaviour
     [Header("Eating Settings")]
     public int lapsToEat = 5;
 
-    [Header("Eating Auio")]
+    [Header("Distance-based Eating")]
+    public float eatDistance = 1.0f; 
+    public float lapDetectionRadius = 3f; 
+
+    [Header("Eating Audio")]
     private AudioSource monchFXAudioSource;
     public AudioClip monchAudioFX;
 
-    // * * * * New * * * *
     [Header("Player Awareness")]
-    public float fleeRadius = 0.5f;          // How close the player must be for rabbit to flee
-    public float fleeSpeedMultiplier = 1f; // How much faster rabbit runs when fleeing
-    public float panicDuration = 0.5f;     // How long rabbit stays in flee mode after player leaves
+    [SerializeField, HideInInspector] private float fleeRadius = 1.5f;          
+    [SerializeField, HideInInspector] private float fleeSpeedMultiplier = 1.2f; 
+    [SerializeField, HideInInspector] private float panicDuration = 2f;        
+
     private Transform player;
     private bool isFleeing = false;
     private float panicTimer = 0f;
-    // * * * * New * * * *
 
     [Header("Garden Seeking")]
     private Transform targetGarden;
@@ -49,52 +52,46 @@ public class RabbitMover : MonoBehaviour
 
     void Start()
     {
+        // Setup audio for eating
         monchFXAudioSource = gameObject.AddComponent<AudioSource>();
-        monchFXAudioSource.volume = 0.3f; 
-        PickRandomGarden();
-        PickWanderTarget();
+        monchFXAudioSource.volume = 0.3f;
+
+        //Pick initial veggie targets and wander targets
+        PickRandomGarden();  
+        PickWanderTarget();  
         wanderTimer = wanderDelay;
 
-        // * * * * New * * * *
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        // * * * * New * * * *
 
         if (targetGarden != null)
             lastAngle = GetAngleToTarget();
-
     }
 
     void Update()
     {
         if (targetGarden != null)
         {
-            // * * * * New * * * *
-            DetectPlayer();
-            // * * * * New * * * *
-
-            MoveAndWander();
-            TrackLaps();
+            DetectPlayer();   // check if player is close
+            MoveAndWander();  // move toward target/wander
+            TrackLaps();      // count laps around target
 
             if (lapCount >= lapsToEat)
-                EatVeggie();
+                EatVeggie(); // eat veggie if laps completed
         }
 
-        //Added to keep bunnies in xz 10 x 10 area, destroy on reaching x 10 or -10, z 10 or -10:
-        ClampPositionToBounds();
+        ClampPositionToBounds(); // keep rabbit inside boundaries
 
-        // HARD boundary destruction. NB: DO NOT TOUCH! THIS WORKS!
-        if (IsOutOfBounds())
+        if (IsOutOfBounds()) // destroy if somehow outside. DO NOT DELETE!
         {
             Debug.Log($"{gameObject.name} left bounds at {transform.position} → Destroying!");
             Destroy(gameObject);
         }
     }
-    
-    // Keeps rabbits inside the play area bounds
+
+    // Keep rabbit inside boundaries
     private void ClampPositionToBounds()
     {
         Vector3 pos = transform.position;
-
         bool hitBoundary = false;
 
         if (pos.x < minX) { pos.x = minX; hitBoundary = true; }
@@ -102,40 +99,37 @@ public class RabbitMover : MonoBehaviour
         if (pos.z < minZ) { pos.z = minZ; hitBoundary = true; }
         if (pos.z > maxZ) { pos.z = maxZ; hitBoundary = true; }
 
-        //Stops rabbits flying away!!!!
         pos.y = 0f;
 
         if (hitBoundary)
-        {
-         // Turn them around when they hit a boundary
-         PickWanderTarget();
-        }
+            PickWanderTarget(); // pick new wander point if hit wall
 
         transform.position = pos;
     }
 
-    //SAFEGAURD for rogue wandering rabbits DO NOT REMOVE! GAME DOESNT END OTHERWISE!
+    // Check if rabbit is completely outside boundaries. The code stops working without it so DON'T DELETE!
     private bool IsOutOfBounds()
     {
         Vector3 pos = transform.position;
         return pos.x < minX || pos.x > maxX || pos.z < minZ || pos.z > maxZ;
     }
 
+    // Move rabbit: wander or flee if player nearby
     private void MoveAndWander()
     {
         Vector3 direction;
 
         if (isFleeing && player != null)
         {
-            // Move away from the player
+            // run away from player
             direction = (transform.position - player.position).normalized;
             float fleeSpeed = speed * fleeSpeedMultiplier;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 8f * Time.deltaTime);
             transform.Translate(Vector3.forward * fleeSpeed * Time.deltaTime);
-            return; // Skip wandering this frame
+            return;
         }
 
-        // Normal wandering
+        // wander toward target
         direction = (wanderTarget - transform.position).normalized;
         if (direction != Vector3.zero)
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 5f * Time.deltaTime);
@@ -145,29 +139,40 @@ public class RabbitMover : MonoBehaviour
         wanderTimer -= Time.deltaTime;
         if (Vector3.Distance(transform.position, wanderTarget) < 0.5f || wanderTimer <= 0f)
         {
-            PickWanderTarget();
+            PickWanderTarget(); // pick new wander spot
             wanderTimer = wanderDelay;
         }
     }
-    // * * * * New * * * * 
 
+    // Track laps around veggie for eating
     private void TrackLaps()
     {
         if (targetGarden == null) return;
 
-        float currentAngle = GetAngleToTarget();
-        float deltaAngle = Mathf.DeltaAngle(lastAngle, currentAngle);
-        accumulatedRotation += Mathf.Abs(deltaAngle);
-        lastAngle = currentAngle;
+        float distanceToGarden = Vector3.Distance(transform.position, targetGarden.position);
 
-        if (accumulatedRotation >= 360f)
+        if (distanceToGarden <= lapDetectionRadius)
         {
-            lapCount++;
-            accumulatedRotation = 0f;
+            float currentAngle = GetAngleToTarget();
+            float deltaAngle = Mathf.DeltaAngle(lastAngle, currentAngle);
+            accumulatedRotation += Mathf.Abs(deltaAngle);
+            lastAngle = currentAngle;
+
+            if (accumulatedRotation >= 360f)
+            {
+                lapCount++;
+                accumulatedRotation = 0f;
+                PickWanderTarget();
+                wanderTimer = 0f; // force new target immediately
+            }
+        }
+        else
+        {
+            lastAngle = GetAngleToTarget();
         }
     }
 
-    // * * * * New * * * * 
+    // Detect player and trigger fleeing
     private void DetectPlayer()
     {
         if (player == null) return;
@@ -176,51 +181,44 @@ public class RabbitMover : MonoBehaviour
 
         if (distance < fleeRadius)
         {
-            // Start fleeing if not already
             isFleeing = true;
-            panicTimer = panicDuration;
+            panicTimer = panicDuration; // start panic
         }
         else if (isFleeing)
         {
-            // Countdown panic timer once player leaves radius
             panicTimer -= Time.deltaTime;
             if (panicTimer <= 0f)
-            {
-                isFleeing = false;
-            }
+                isFleeing = false; // stop fleeing after panic duration
         }
     }
-    // * * * * New * * * * 
 
     private float GetAngleToTarget()
     {
         Vector3 dir = transform.position - targetGarden.position;
         return Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
     }
-    
+
+    // Eat the veggie target
     private void EatVeggie()
     {
-    if (targetGarden != null)
-    {
+        if (targetGarden != null)
+        {
             Destroy(targetGarden.gameObject);
             monchFXAudioSource.PlayOneShot(monchAudioFX, 1.0f);
 
-        if (gameManager != null)
-        {
-            gameManager.CheckGameOver();
+            if (gameManager != null)
+                gameManager.CheckGameOver();
         }
-    }
 
-    lapCount = 0;
-    accumulatedRotation = 0f;
-    PickRandomGarden();
+        lapCount = 0;
+        accumulatedRotation = 0f;
 
+        PickRandomGarden();
         if (targetGarden != null)
             PickWanderTarget();
-        }
+    }
 
-
-
+    // Pick a random veggie target
     private void PickRandomGarden()
     {
         GameObject[] gardens = GameObject.FindGameObjectsWithTag("Veggie");
@@ -228,24 +226,26 @@ public class RabbitMover : MonoBehaviour
         targetGarden = gardens.Length > 0 ? gardens[Random.Range(0, gardens.Length)].transform : null;
     }
 
+    // Pick a random wander target around the veggie
     private void PickWanderTarget()
     {
         if (targetGarden == null) return;
+
         Vector2 circle = Random.insideUnitCircle * wanderRadius;
         wanderTarget = targetGarden.position + new Vector3(circle.x, 0, circle.y);
+
+        // Clamp inside play area
+        wanderTarget.x = Mathf.Clamp(wanderTarget.x, minX, maxX);
+        wanderTarget.z = Mathf.Clamp(wanderTarget.z, minZ, maxZ);
     }
 
     private void OnDestroy()
     {
+        // notify spawner rabbit is gone
         if (spawner != null)
-        {
             spawner.RabbitDestroyed(this.gameObject);
-        }
 
         if (gameManager != null)
-        {
             gameManager.CheckGameOver();
-        }
     }
-
 }

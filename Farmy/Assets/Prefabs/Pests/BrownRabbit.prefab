@@ -1953,7 +1953,6 @@ MonoBehaviour:
   rabbitPrefabs: []
   rabbitsPerWave: 10
   spawnInterval: 3
-  delayBetweenWaves: 10
   burrowSpawnFX: {fileID: 0}
   burrowAudioFX: {fileID: 0}
 --- !u!114 &-2008489960188399852
@@ -1977,8 +1976,9 @@ MonoBehaviour:
   minZ: -10
   maxZ: 10
   lapsToEat: 2
+  eatDistance: 1
+  lapDetectionRadius: 3
   monchAudioFX: {fileID: 8300000, guid: 37291efb4dc3b4d0199666c0b46c69c1, type: 3}
-  destroyAudioFX: {fileID: 8300000, guid: 120cfacb17cd74115a2af85e5618e6f8, type: 3}
   fleeRadius: 1.2
   fleeSpeedMultiplier: 1
   panicDuration: 2.5
