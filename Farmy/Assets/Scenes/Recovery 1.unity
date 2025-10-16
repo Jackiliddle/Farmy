@@ -4759,7 +4759,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d920c01f0f364a84aa0636440ccaf86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  speed: 5
+  speed: 7
   walkSound: {fileID: 8300000, guid: cc47727fc0ac84539afa2c7534215506, type: 3}
   playerAnim: {fileID: 0}
   dirtParticle: {fileID: 724235703}

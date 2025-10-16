@@ -1978,8 +1978,9 @@ MonoBehaviour:
   maxZ: 10
   lapsToEat: 2
   monchAudioFX: {fileID: 8300000, guid: 37291efb4dc3b4d0199666c0b46c69c1, type: 3}
-  fleeRadius: 1.5
-  fleeSpeedMultiplier: 1.5
+  destroyAudioFX: {fileID: 8300000, guid: 120cfacb17cd74115a2af85e5618e6f8, type: 3}
+  fleeRadius: 1.2
+  fleeSpeedMultiplier: 1
   panicDuration: 2.5
   spawner: {fileID: 0}
   gameManager: {fileID: 0}

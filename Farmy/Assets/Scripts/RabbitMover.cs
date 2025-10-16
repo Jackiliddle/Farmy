@@ -61,6 +61,7 @@ public class RabbitMover : MonoBehaviour
 
         if (targetGarden != null)
             lastAngle = GetAngleToTarget();
+
     }
 
     void Update()
@@ -78,6 +79,9 @@ public class RabbitMover : MonoBehaviour
                 EatVeggie();
         }
 
+        //Added to keep bunnies in xz 10 x 10 area, destroy on reaching x 10 or -10, z 10 or -10:
+        ClampPositionToBounds();
+
         // HARD boundary destruction. NB: DO NOT TOUCH! THIS WORKS!
         if (IsOutOfBounds())
         {
@@ -85,30 +89,38 @@ public class RabbitMover : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    
+    // Keeps rabbits inside the play area bounds
+    private void ClampPositionToBounds()
+    {
+        Vector3 pos = transform.position;
 
+        bool hitBoundary = false;
+
+        if (pos.x < minX) { pos.x = minX; hitBoundary = true; }
+        if (pos.x > maxX) { pos.x = maxX; hitBoundary = true; }
+        if (pos.z < minZ) { pos.z = minZ; hitBoundary = true; }
+        if (pos.z > maxZ) { pos.z = maxZ; hitBoundary = true; }
+
+        //Stops rabbits flying away!!!!
+        pos.y = 0f;
+
+        if (hitBoundary)
+        {
+         // Turn them around when they hit a boundary
+         PickWanderTarget();
+        }
+
+        transform.position = pos;
+    }
+
+    //SAFEGAURD for rogue wandering rabbits DO NOT REMOVE! GAME DOESNT END OTHERWISE!
     private bool IsOutOfBounds()
     {
         Vector3 pos = transform.position;
         return pos.x < minX || pos.x > maxX || pos.z < minZ || pos.z > maxZ;
     }
 
-    //private void MoveAndWander()
-    //{
-    //    Vector3 direction = (wanderTarget - transform.position).normalized;
-    //    if (direction != Vector3.zero)
-    //        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 5f * Time.deltaTime);
-
-    //    transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
-    //    wanderTimer -= Time.deltaTime;
-    //    if (Vector3.Distance(transform.position, wanderTarget) < 0.5f || wanderTimer <= 0f)
-    //    {
-    //        PickWanderTarget();
-    //        wanderTimer = wanderDelay;
-    //    }
-    //}
-
-    // * * * * New * * * * 
     private void MoveAndWander()
     {
         Vector3 direction;

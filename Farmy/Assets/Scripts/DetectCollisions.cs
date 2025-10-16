@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Destroy : MonoBehaviour
+public class DetectCollisions : MonoBehaviour
 {
     private AudioSource sfxAudioSource;    
 

@@ -65,6 +65,7 @@ public class GameManager : MonoBehaviour
     public void CheckGameOver()
     {
         GameObject[] veggies = GameObject.FindGameObjectsWithTag("Veggie");
+        Debug.Log($"Veggies remaining: {GameObject.FindGameObjectsWithTag("Veggie").Length}");
 
         if (veggies.Length == 0)
         {

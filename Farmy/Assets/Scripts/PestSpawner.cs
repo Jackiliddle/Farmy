@@ -23,11 +23,37 @@ public class PestSpawner : MonoBehaviour
     private bool gameStarted = false;
     private int waveNumber = 0;
 
-    public void Start()
+private void Start()
+{
+    burrowFXAudioSource = gameObject.AddComponent<AudioSource>();
+
+    // Start the recurring burrow spawner
+    // StartCoroutine(SpawnBurrowEveryInterval(20f));
+}
+
+private IEnumerator SpawnBurrowEveryInterval(float interval)
+{
+    while (true)
     {
-        burrowFXAudioSource = gameObject.AddComponent<AudioSource>();
-        //sfxAudioSource.volume = 0.3f;
+        yield return new WaitForSeconds(interval);
+
+        // Find all inactive burrows
+        List<Transform> inactiveBurrows = burrows.FindAll(b => !b.gameObject.activeSelf);
+
+        if (inactiveBurrows.Count > 0)
+        {
+            // Pick one at random
+            Transform burrow = inactiveBurrows[Random.Range(0, inactiveBurrows.Count)];
+            StartCoroutine(AnimateBurrowAppearance(burrow));
+
+            // Play spawn sound
+            if (burrowAudioFX != null && burrowFXAudioSource != null)
+                burrowFXAudioSource.PlayOneShot(burrowAudioFX, 0.5f);
+
+            Debug.Log($"Burrow popped up at {burrow.position}");
+        }
     }
+}
 
     public void AdjustDifficulty(int difficulty)
     {
@@ -53,7 +79,7 @@ public class PestSpawner : MonoBehaviour
 
         if (burrows.Count == 0)
         {
-            Debug.LogWarning("No burrows found! Make sure your burrow objects are tagged 'Burrow'.");
+            Debug.LogWarning("No burrows found!");
             return;
         }
 
@@ -62,6 +88,7 @@ public class PestSpawner : MonoBehaviour
 
         gameStarted = true;
         StartCoroutine(SpawnWaves());
+        StartCoroutine(SpawnBurrowEveryInterval(20f));
     }
 
     private IEnumerator SpawnWaves()
@@ -72,7 +99,7 @@ public class PestSpawner : MonoBehaviour
             Debug.Log($"Starting wave {waveNumber}");
 
             // ✅ Activate one more burrow each new wave
-            ActivateBurrows(waveNumber);
+            //ActivateBurrows(waveNumber);
 
             // ✅ Scale difficulty: +5 rabbits, spawn interval -1s (down to min 1f)
             rabbitsPerWave += 5;
@@ -89,26 +116,26 @@ public class PestSpawner : MonoBehaviour
         }
     }
 
-    private void ActivateBurrows(int wave)
-    {
-        int burrowsToActivate = Mathf.Min(wave, burrows.Count);
+    // private void ActivateBurrows(int wave)
+    // {
+    //     int burrowsToActivate = Mathf.Min(wave, burrows.Count);
 
-        for (int i = 0; i < burrowsToActivate; i++)
-        {
-            if (!burrows[i].gameObject.activeSelf)
-            {
-                StartCoroutine(AnimateBurrowAppearance(burrows[i]));
+    //     for (int i = 0; i < burrowsToActivate; i++)
+    //     {
+    //         if (!burrows[i].gameObject.activeSelf)
+    //         {
+    //             StartCoroutine(AnimateBurrowAppearance(burrows[i]));
                 
-                //Poof burrow appears noise
-                if (burrowAudioFX != null && burrowFXAudioSource != null)
-                {
-                    burrowFXAudioSource.PlayOneShot(burrowAudioFX, 0.5f); // 1f = full volume
-                }
-            }
-        }
+    //             //Poof burrow appears noise
+    //             if (burrowAudioFX != null && burrowFXAudioSource != null)
+    //             {
+    //                 burrowFXAudioSource.PlayOneShot(burrowAudioFX, 0.5f); // 1f = full volume
+    //             }
+    //         }
+    //     }
 
-        Debug.Log($"{burrowsToActivate} burrows active this wave.");
-    }
+    //     Debug.Log($"{burrowsToActivate} burrows active this wave.");
+    // }
 
     private IEnumerator AnimateBurrowAppearance(Transform burrow)
     {
@@ -153,6 +180,9 @@ public class PestSpawner : MonoBehaviour
 
         GameObject rabbit = Instantiate(prefab, position, rot);
         activeRabbits.Add(rabbit);
+
+        // Destroy this rabbit automatically after 20 seconds
+        Destroy(rabbit, 20f);
 
         RabbitMover mover = rabbit.GetComponent<RabbitMover>();
         if (mover != null)
