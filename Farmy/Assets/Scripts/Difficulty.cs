@@ -9,21 +9,17 @@ public class Difficulty : MonoBehaviour
 
     void Start()
     {
-        // Get button component and add listener
         button = GetComponent<Button>();
         button.onClick.AddListener(SetDifficulty);
 
-        // Find GameManager in scene
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         //Empty. Can this be removed?
     }
 
-    // Called when the difficulty button is clicked
     void SetDifficulty()
     {
         Debug.Log(gameObject.name + " button clicked!");

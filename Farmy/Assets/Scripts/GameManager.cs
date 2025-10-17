@@ -3,7 +3,6 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,7 +11,6 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI gameOverText;
     public TextMeshProUGUI titleText;
-    public TextMeshProUGUI cashText;
     public Button restartButton;
     public GameObject titleScreen;
 
@@ -23,23 +21,40 @@ public class GameManager : MonoBehaviour
     private int score;
     public bool isGameActive;
 
-    // Keep highscore here
+    [Header("Countdown")]
+    public TextMeshProUGUI startText; 
+    public float countdownTime = 3f;
+
+    [Header("Pause")]
+    public GameObject pauseMenu; 
+    private bool isPaused = false;
+
+    [Header("Instructions Panel")]
+    public GameObject instructionsPanel;
+
     private void Start()
     {
+        Time.timeScale = 1f;
+
         highScore = PlayerPrefs.GetInt("HighScore", 0);
         highScoreText.text = "High Score: " + highScore;
 
-        // Hide all burrows at start
         pestSpawner.HideAllBurrows();
     }
 
-    // Update bunny killscore
+    private void Update()
+    {
+        if (isGameActive && Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePause();
+        }
+    }
+
     public void UpdateScore(int scoreToAdd)
     {
         score += scoreToAdd;
         scoreText.text = "Current score: " + score;
 
-        // Update high score if beaten
         if (score > highScore)
         {
             highScore = score;
@@ -49,37 +64,46 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Start game
     public void StartGame(int difficulty)
     {
+        Time.timeScale = 1f; 
+        titleScreen.SetActive(false);
+        StartCoroutine(CountdownAndStart(difficulty));
+    }
+
+    private IEnumerator CountdownAndStart(int difficulty)
+    {
+        startText.gameObject.SetActive(true);
+
+        for (int i = (int)countdownTime; i > 0; i--)
+        {
+            startText.text = i.ToString();
+            yield return new WaitForSeconds(1f);
+        }
+
+        startText.text = "GO!";
+        yield return new WaitForSeconds(1f);
+        startText.gameObject.SetActive(false);
+
         isGameActive = true;
         score = 0;
         UpdateScore(0);
 
-        // Hide title screen
-        titleScreen.SetActive(false);
-
-        // Adjust difficulty of pests
         if (pestSpawner != null)
             pestSpawner.AdjustDifficulty(difficulty);
 
-        // Start growing all crops
         CropGrower.StartGrowingCrops();
     }
 
-    // Check if there are veggies still on scene
     public void CheckGameOver()
     {
         GameObject[] veggies = GameObject.FindGameObjectsWithTag("Veggie");
         Debug.Log($"Veggies remaining: {veggies.Length}");
 
         if (veggies.Length == 0)
-        {
             GameOver();
-        }
     }
 
-    // Stop any routines if game is over
     public void GameOver()
     {
         if (!isGameActive) return;
@@ -87,39 +111,69 @@ public class GameManager : MonoBehaviour
         gameOverText.gameObject.SetActive(true);
         isGameActive = false;
 
-        // Stop pest spawning
         if (pestSpawner != null)
             pestSpawner.StopAllCoroutines();
 
-        // Show restart button
         restartButton.gameObject.SetActive(true);
 
         Debug.Log("GAME OVER! All veggies have been eaten!");
         Debug.Log("Score: " + score);
     }
 
-    // Restart :)
     public void RestartGame()
     {
+        Time.timeScale = 1f; 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         Debug.Log("Restart Clicked!");
     }
 
-    //Instructions Panel stuff
-    public GameObject instructionsPanel; 
-
-    //Instructions Button
     public void ShowInstructions()
     {
         if (instructionsPanel != null)
             instructionsPanel.SetActive(true);
     }
 
-    //Exit Button inside the panel
     public void HideInstructions()
     {
         if (instructionsPanel != null)
             instructionsPanel.SetActive(false);
     }
-}
 
+    public void TogglePause()
+    {
+        if (isPaused)
+        {
+            // Unpause
+            Time.timeScale = 1f;
+            isPaused = false;
+            if (pauseMenu != null) pauseMenu.SetActive(false);
+        }
+        else
+        {
+            // Pause
+            Time.timeScale = 0f;
+            isPaused = true;
+            if (pauseMenu != null) pauseMenu.SetActive(true);
+        }
+    }
+
+    //Do not delete! Fixes the game loop issue!
+    public void ReturnToMainMenu()
+    {
+        Time.timeScale = 1f;
+        isPaused = false;
+        isGameActive = false;
+
+        if (pauseMenu != null)
+            pauseMenu.SetActive(false);
+
+        if (pestSpawner != null)
+            pestSpawner.HideAllBurrows();
+
+        titleScreen.SetActive(true);
+        gameOverText.gameObject.SetActive(false);
+        restartButton.gameObject.SetActive(false);
+
+        Debug.Log("Returned to Main Menu");
+    }
+}

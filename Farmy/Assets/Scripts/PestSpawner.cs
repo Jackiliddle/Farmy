@@ -8,34 +8,33 @@ public class PestSpawner : MonoBehaviour
     public GameObject[] rabbitPrefabs;
 
     [Header("Spawn Settings")]
-    [SerializeField, HideInInspector] private int rabbitsPerWave = 5; // Default, not editable in inspector
-    [SerializeField, HideInInspector] private float spawnInterval = 3f; // Default, not editable in inspector
+    [SerializeField, HideInInspector] private int rabbitsPerWave = 2; 
+    [SerializeField, HideInInspector] private float spawnInterval = 3f; 
 
     [Header("Burrow FX")]
     public GameObject burrowSpawnFX; 
     private AudioSource burrowFXAudioSource;
     public AudioClip burrowAudioFX;
 
+    [Header("Spawning Stuff")]
     private List<GameObject> activeRabbits = new List<GameObject>();
     private List<Transform> burrows = new List<Transform>();
 
+    [Header("Spawn Mechanics")]
     private bool gameStarted = false;
-    private float burrowSpawnInterval; // Set based on difficulty
+    private float burrowSpawnInterval; 
 
     private void Start()
     {
-        // Setup audio source for burrow effects
         burrowFXAudioSource = gameObject.AddComponent<AudioSource>();
     }
 
     // difficulty: 1 = easy, 2 = medium, 3 = hard
     public void AdjustDifficulty(int difficulty)
     {
-        // Adjust rabbits per wave and spawn interval based on difficulty
-        rabbitsPerWave = 10 * difficulty;
+        rabbitsPerWave = 5 * difficulty;
         spawnInterval = Mathf.Max(0.5f, 3f / difficulty);
 
-        // Set burrow spawn interval based on difficulty
         switch (difficulty)
         {
             case 1: burrowSpawnInterval = 15f; break; // easy
@@ -47,7 +46,6 @@ public class PestSpawner : MonoBehaviour
         StartSpawning();
     }
 
-    // Start spawning burrows if not started
     private void StartSpawning()
     {
         if (gameStarted) return;
@@ -66,15 +64,13 @@ public class PestSpawner : MonoBehaviour
         }
 
         gameStarted = true;
-
-        // Start spawning burrows: first after 3 seconds, then repeat
-        StartCoroutine(SpawnBurrowsWithInitialDelay(3f, burrowSpawnInterval));
+        StartCoroutine(SpawnBurrowsWithInitialDelay(1f, burrowSpawnInterval));
     }
 
-    // Coroutine to spawn burrows repeatedly
+    //Do not delete! Fixes the weird Burrow spawn start delay issue
     private IEnumerator SpawnBurrowsWithInitialDelay(float initialDelay, float interval)
     {
-        yield return new WaitForSeconds(initialDelay); 
+        yield return new WaitForSeconds(initialDelay);
         yield return StartCoroutine(SpawnBurrow());
 
         while (true)
@@ -83,8 +79,6 @@ public class PestSpawner : MonoBehaviour
             yield return StartCoroutine(SpawnBurrow());
         }
     }
-
-    // Spawn a single burrow
     private IEnumerator SpawnBurrow()
     {
         List<Transform> inactiveBurrows = burrows.FindAll(b => !b.gameObject.activeSelf);
@@ -94,7 +88,6 @@ public class PestSpawner : MonoBehaviour
         Transform burrow = inactiveBurrows[Random.Range(0, inactiveBurrows.Count)];
         StartCoroutine(AnimateBurrowAppearance(burrow));
 
-        // Play burrow audio FX
         if (burrowAudioFX != null && burrowFXAudioSource != null)
             burrowFXAudioSource.PlayOneShot(burrowAudioFX, 0.5f);
 
@@ -104,7 +97,7 @@ public class PestSpawner : MonoBehaviour
         yield return null;
     }
 
-    // Animate burrow popping up
+    // Animate burrow popping up via scaling!!
     private IEnumerator AnimateBurrowAppearance(Transform burrow)
     {
         if (burrowSpawnFX != null)
@@ -126,7 +119,6 @@ public class PestSpawner : MonoBehaviour
         burrow.localScale = Vector3.one;
     }
 
-    // Spawn rabbits from burrow
     private IEnumerator SpawnWaveFromBurrow(Transform burrow)
     {
         for (int i = 0; i < rabbitsPerWave; i++)
@@ -135,8 +127,6 @@ public class PestSpawner : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
         }
     }
-
-    // Spawn a single rabbit
     private void SpawnRabbit(Vector3 position)
     {
         if (rabbitPrefabs.Length == 0) return;
@@ -159,14 +149,13 @@ public class PestSpawner : MonoBehaviour
         Debug.Log($"Spawned rabbit at {position}");
     }
 
-    // Remove rabbit from active list
     public void RabbitDestroyed(GameObject rabbit)
     {
         if (activeRabbits.Contains(rabbit))
             activeRabbits.Remove(rabbit);
     }
 
-    // Hide all burrows at start
+    // Hide all burrows at start - Can't let theplayers see where the bunnies are coming from!
     public void HideAllBurrows()
     {
         Transform burrowParent = GameObject.Find("Burrows").transform;

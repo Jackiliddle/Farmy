@@ -7,8 +7,6 @@ public class CropGrower : MonoBehaviour
     private float finalScale = 3f;
     private const float GrowDuration = 15f;
 
-    // Starts the growth process for all GameObjects tagged as "Veggie".
-
     public static void StartGrowingCrops()
     {
         foreach (var crop in GameObject.FindGameObjectsWithTag("Veggie"))
@@ -24,7 +22,6 @@ public class CropGrower : MonoBehaviour
         }
     }
 
-    //Scaling up the crops.
     private IEnumerator GrowCropCoroutine()
     {
         Vector3 startScale = Vector3.zero;
@@ -39,7 +36,6 @@ public class CropGrower : MonoBehaviour
             yield return null;
         }
 
-        //Is it 3f?
         transform.localScale = targetScale;
     }
 }
